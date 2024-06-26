@@ -6,7 +6,7 @@ authors = ["ventura94 <arianventura94@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.9"
 flask = "^2.3.3"
 pydantic = { version = "^1.10.15", extras = ["dotenv"] }
 
