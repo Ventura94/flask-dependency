@@ -1,17 +1,28 @@
-name: Build and publish python package
+name: Publish
 
 on:
   release:
     types: [ published ]
 
 jobs:
-  publish-service-client-package:
+  Publish:
+    timeout-minutes: 10
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    env:
+      OS: ubuntu-latest
+      PYTHON: '3.9'
     steps:
-      - name: Publish PyPi package
-        uses: code-specialist/pypi-poetry-publish@v1
+      - uses: actions/checkout@master
+      - name: Set up Python 3.9
+        uses: actions/setup-python@master
         with:
-          ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PUBLISH_REGISTRY_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+          python-version: 3.9
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip          
+          pip install poetry
+          poetry install
+      - name: Publish package
+        run: |
+          poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
+          poetry publish --build
