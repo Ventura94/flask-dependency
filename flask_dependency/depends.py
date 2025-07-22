@@ -20,6 +20,10 @@ class Depends:
             return result
         return getattr(g, self.cache_key)
 
+    def exists(self) -> bool:
+        print(hasattr(g, self.cache_key))
+        return bool(hasattr(g, self.cache_key))
+
     @classmethod
     def attach_dependency(cls, dependency_instance: Any) -> Any:
         instance = cls(type(dependency_instance))

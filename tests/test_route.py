@@ -12,6 +12,7 @@ from flask_dependency.exceptions.unprocessable_content import (
     UnprocessableContent,
 
 )
+from flask_dependency.inject import inject
 
 
 def handle_unprocessable_content(exception: UnprocessableContent):
@@ -201,3 +202,28 @@ def test_route_with_dependency_cache_prove():
         assert response.status_code == 200
         random_two = response.json()["random"]
         assert random_one != random_two  # I check that the cache does not work between requests
+
+
+def test_route_with_dependency_injections_unions():
+    app = Flask(__name__)
+    app.debug = True
+    blueprint = Blueprint("test_blueprint", __name__)
+    app.register_error_handler(UnprocessableContent, handle_unprocessable_content)
+
+    @route(blueprint, "/test", methods=["POST"], endpoint="route_test")
+    def route_test(
+            input_data: InputModelForm = Depends(),
+            test_depends: str = Depends(dependency),
+    ):
+        @inject
+        def test_unions(input_data: InputModelForm | ResponseSchema = Depends()):
+            assert isinstance(input_data, InputModelForm)
+
+        test_unions()
+
+    app.register_blueprint(blueprint)
+
+    with httpx.Client(app=app, base_url="http://testserver") as client:
+        response = client.post("/test", json='{"id": 1, "name": "test"}')
+        assert response.status_code == 200
+        assert response.json() == {"message": "success"}
